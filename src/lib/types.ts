@@ -3,6 +3,8 @@ export type Product = {
   upc: string | null;
   imageName: string;
   category: string;
+  department: string;
+  audience: string;
   sport: string;
   size: string;
   color: string;
@@ -16,6 +18,8 @@ export type Product = {
 export type ItemDetails = {
   upc: string | null;
   category: string;
+  department: string;
+  audience: string;
   sport: string;
   size: string;
   color: string;
