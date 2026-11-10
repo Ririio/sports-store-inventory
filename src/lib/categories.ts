@@ -61,9 +61,22 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     title: 'Gear',
     items: ['Helmet', 'Pads', 'Shin Guards', 'Stick', 'Puck', 'Ball'],
   },
+  { title: 'Other', items: [] },
 ];
 
 export const KNOWN_CATEGORIES = new Set(CATEGORY_GROUPS.flatMap((group) => group.items));
+
+// A broad department is useful during a rapid stock count, even when the
+// exact product subtype is unknown. Existing saved items can infer this.
+export function departmentForCategory(category: string): string {
+  if (!category) return '';
+  const group = CATEGORY_GROUPS.find(
+    (entry) => entry.title === category || entry.items.includes(category),
+  );
+  return group?.title ?? 'Other';
+}
+
+export const AUDIENCES = ['Men', 'Women', 'Youth', 'Unisex'] as const;
 
 export const SPORTS = [
   'Hockey',
