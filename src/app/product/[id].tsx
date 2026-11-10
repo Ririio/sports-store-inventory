@@ -43,6 +43,8 @@ export default function ProductScreen() {
           upc: details.upc,
           imageName,
           category: details.category,
+          department: details.department,
+          audience: details.audience,
           sport: details.sport,
           size: details.size,
           color: details.color,
