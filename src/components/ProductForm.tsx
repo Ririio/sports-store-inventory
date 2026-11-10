@@ -12,7 +12,7 @@ import {
 import { DangerButton, PrimaryButton } from '@/components/Buttons';
 import { Chip } from '@/components/Chip';
 import { ChoiceSection } from '@/components/ChoiceSection';
-import { CATEGORY_GROUPS, COLORS, KNOWN_CATEGORIES, SIZES, SPORTS } from '@/lib/categories';
+import { AUDIENCES, CATEGORY_GROUPS, COLORS, KNOWN_CATEGORIES, SIZES, SPORTS, departmentForCategory } from '@/lib/categories';
 import { productName } from '@/lib/format';
 import type { ItemDetails } from '@/lib/types';
 import { normalizeUpc } from '@/lib/upc';
@@ -43,9 +43,19 @@ export function ProductForm({
   onDelete,
   onSubmit,
 }: Props) {
-  const [category, setCategory] = useState(KNOWN_CATEGORIES.has(initial.category) ? initial.category : '');
+  const initialDepartment = initial.department || departmentForCategory(initial.category);
+  const [department, setDepartment] = useState(initialDepartment);
+  const [audience, setAudience] = useState(initial.audience || '');
+  const [category, setCategory] = useState(initial.category || '');
   const [customCategory, setCustomCategory] = useState(
-    initial.category && !KNOWN_CATEGORIES.has(initial.category) ? initial.category : '',
+    initial.category &&
+      !KNOWN_CATEGORIES.has(initial.category) &&
+      !CATEGORY_GROUPS.some((group) => group.title === initial.category)
+      ? initial.category
+      : '',
+  );
+  const [showTypes, setShowTypes] = useState(
+    Boolean(initial.category && initial.category !== initialDepartment),
   );
   const [sport, setSport] = useState(initial.sport);
   const [size, setSize] = useState(initial.size);
@@ -56,15 +66,17 @@ export function ProductForm({
   const [upcText, setUpcText] = useState(initial.upc ?? '');
 
   function submit() {
-    const chosenCategory = (customCategory.trim() || category).trim();
-    if (!chosenCategory) {
-      Alert.alert('Choose a category', 'Pick a type such as cap, toque, or jersey, or type your own.');
+    if (!department) {
+      Alert.alert('Choose a department', 'Pick a broad category such as headwear, tops, or accessories.');
       return;
     }
+    const chosenCategory = (customCategory.trim() || category || department).trim();
     const nextUpc = upcEditable ? normalizeUpc(upcText) : upc;
     onSubmit({
       upc: nextUpc && nextUpc.length > 0 ? nextUpc : null,
       category: chosenCategory,
+      department,
+      audience: audience.trim(),
       sport: sport.trim(),
       size: size.trim(),
       color: color.trim(),
@@ -75,11 +87,12 @@ export function ProductForm({
   }
 
   const customSelected = customCategory.trim().length > 0;
+  const chosenGroup = CATEGORY_GROUPS.find((group) => group.title === department);
   const name = productName({
     brand,
     sport,
     color,
-    category: (customCategory.trim() || category).trim(),
+    category: (customCategory.trim() || category || department).trim(),
   });
 
   return (
@@ -95,12 +108,6 @@ export function ProductForm({
           Replace photo
         </Text>
       ) : null}
-
-      <View style={styles.banner}>
-        <Text style={styles.bannerLabel}>Product name</Text>
-        <Text style={name ? styles.bannerValue : styles.hint}>{name || 'Brand-sport-color-category'}</Text>
-        <Text style={styles.hint}>Built from brand, sport, color, and category. Blank fields are left out.</Text>
-      </View>
 
       <View style={styles.banner}>
         <Text style={styles.bannerLabel}>{upc || upcText ? 'UPC' : 'No barcode'}</Text>
@@ -125,36 +132,63 @@ export function ProductForm({
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>Category</Text>
-        <Text style={styles.hint}>Required. Pick the closest type, or type your own.</Text>
-        {CATEGORY_GROUPS.map((group) => (
-          <View key={group.title} style={styles.group}>
-            <Text style={styles.groupTitle}>{group.title}</Text>
+        <Text style={styles.label}>Department (required)</Text>
+        <Text style={styles.hint}>One tap is enough. A specific type is optional.</Text>
+        <View style={styles.chips}>
+          {CATEGORY_GROUPS.map((group) => (
+            <Chip
+              key={group.title}
+              label={group.title === 'Headwear' ? 'Hats / Headwear' : group.title === 'Gear' ? 'Sports gear' : group.title}
+              selected={department === group.title}
+              onPress={() => {
+                if (department === group.title) return;
+                setDepartment(group.title);
+                setCategory(group.title);
+                setCustomCategory('');
+                setShowTypes(false);
+              }}
+            />
+          ))}
+        </View>
+        {department ? (
+          <Text onPress={() => setShowTypes((visible) => !visible)} style={styles.link}>
+            {showTypes ? 'Hide specific type' : 'Add specific type (optional)'}
+          </Text>
+        ) : null}
+        {department && showTypes ? (
+          <View style={styles.group}>
             <View style={styles.chips}>
-              {group.items.map((item) => (
+              {chosenGroup?.items.map((item) => (
                 <Chip
                   key={item}
                   label={item}
                   selected={!customSelected && category === item}
                   onPress={() => {
                     setCustomCategory('');
-                    setCategory((current) => (current === item ? '' : item));
+                    setCategory(item);
                   }}
                 />
               ))}
             </View>
+            <TextInput
+              autoCapitalize="words"
+              onChangeText={setCustomCategory}
+              placeholder="Or enter a specific type"
+              placeholderTextColor={colors.muted}
+              style={styles.input}
+              value={customCategory}
+            />
           </View>
-        ))}
-        <TextInput
-          autoCapitalize="words"
-          onChangeText={setCustomCategory}
-          placeholder="Or type a category"
-          placeholderTextColor={colors.muted}
-          style={styles.input}
-          value={customCategory}
-        />
+        ) : null}
       </View>
 
+      <ChoiceSection
+        hint="Men, women, youth, or unisex. Optional if unknown."
+        label="Audience"
+        onChange={setAudience}
+        options={[...AUDIENCES]}
+        value={audience}
+      />
       <ChoiceSection
         customPlaceholder="Other sport"
         hint="Optional."
@@ -218,6 +252,10 @@ export function ProductForm({
         />
       </View>
 
+      <View style={styles.banner}>
+        <Text style={styles.bannerLabel}>Automatic product name</Text>
+        <Text style={name ? styles.bannerValue : styles.hint}>{name || 'Choose a department above'}</Text>
+      </View>
       <PrimaryButton disabled={busy} label={busy ? 'Saving...' : submitLabel} onPress={submit} />
       {onDelete ? <DangerButton label="Delete item" onPress={onDelete} /> : null}
     </ScrollView>
@@ -236,7 +274,7 @@ const styles = StyleSheet.create({
   photo: {
     backgroundColor: colors.chip,
     borderRadius: 16,
-    height: 240,
+    height: 160,
     width: '100%',
   },
   banner: {
