@@ -101,12 +101,12 @@ export default function HomeScreen() {
     }
     Alert.alert(
       'Export inventory',
-      'The spreadsheet names each item brand-sport-color-category. New photos also copy to this PC while Expo is running.',
+      'Full ZIP exports group photos by department and link them to the spreadsheet and JSON. Photos on your phone stay unchanged.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Save photos on computer', onPress: () => void copyPhotosToComputer() },
         { text: 'Spreadsheet only', onPress: () => void runExport('sheet') },
-        { text: 'Full backup (data, sheet and photos)', onPress: () => void runExport('zip') },
+        { text: 'Full backup (organized photos)', onPress: () => void runExport('zip') },
       ],
     );
   }
