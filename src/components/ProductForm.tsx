@@ -12,7 +12,16 @@ import {
 import { DangerButton, PrimaryButton } from '@/components/Buttons';
 import { Chip } from '@/components/Chip';
 import { ChoiceSection } from '@/components/ChoiceSection';
-import { AUDIENCES, CATEGORY_GROUPS, COLORS, KNOWN_CATEGORIES, SIZES, SPORTS, departmentForCategory } from '@/lib/categories';
+import {
+  AUDIENCES,
+  CATEGORY_GROUPS,
+  COLORS,
+  KNOWN_CATEGORIES,
+  SPORTS,
+  departmentForCategory,
+  sizeHintFor,
+  sizeOptionsFor,
+} from '@/lib/categories';
 import { productName } from '@/lib/format';
 import type { ItemDetails } from '@/lib/types';
 import { normalizeUpc } from '@/lib/upc';
@@ -198,11 +207,11 @@ export function ProductForm({
         value={sport}
       />
       <ChoiceSection
-        customPlaceholder="Other size, such as 32 or 7 1/2"
-        hint="Optional."
+        customPlaceholder="Enter any other size"
+        hint={sizeHintFor(department)}
         label="Size"
         onChange={setSize}
-        options={SIZES}
+        options={sizeOptionsFor(department, audience, customCategory.trim() || category)}
         value={size}
       />
       <ChoiceSection
