@@ -32,7 +32,7 @@ export default function HomeScreen() {
   const [busyLabel, setBusyLabel] = useState<string | null>(null);
 
   const categories = useMemo(() => {
-    const names = new Set(products.map((product) => product.category).filter(Boolean));
+    const names = new Set(products.map((product) => product.department || product.category).filter(Boolean));
     return ['All', ...Array.from(names).sort((a, b) => a.localeCompare(b))];
   }, [products]);
 
@@ -41,12 +41,14 @@ export default function HomeScreen() {
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return products.filter((product) => {
-      if (activeCategory !== 'All' && product.category !== activeCategory) return false;
+      if (activeCategory !== 'All' && (product.department || product.category) !== activeCategory) return false;
       if (!needle) return true;
       const haystack = [
         productName(product),
         product.upc,
         product.category,
+        product.department,
+        product.audience,
         product.sport,
         product.size,
         product.color,
@@ -99,12 +101,12 @@ export default function HomeScreen() {
     }
     Alert.alert(
       'Export inventory',
-      'The spreadsheet names each item brand-sport-color-category. New photos also copy to this PC while Expo is running.',
+      'Full ZIP exports group photos by department and link them to the spreadsheet and JSON. Photos on your phone stay unchanged.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Save photos on computer', onPress: () => void copyPhotosToComputer() },
         { text: 'Spreadsheet only', onPress: () => void runExport('sheet') },
-        { text: 'Full backup (data, sheet and photos)', onPress: () => void runExport('zip') },
+        { text: 'Full backup (organized photos)', onPress: () => void runExport('zip') },
       ],
     );
   }
@@ -212,6 +214,7 @@ function ProductRow({ product }: { product: Product }) {
       <Image source={{ uri: photoUri(product.imageName) }} style={styles.thumb} />
       <View style={styles.rowBody}>
         <Text style={styles.category}>{productName(product) || 'Unnamed'}</Text>
+        <Text style={styles.meta}>{[product.department, product.audience, product.sport].filter(Boolean).join(' · ')}</Text>
         <Text style={styles.meta}>{product.upc ?? 'No barcode'}</Text>
         {detail ? <Text style={styles.meta}>{detail}</Text> : null}
         <Text style={styles.meta}>
