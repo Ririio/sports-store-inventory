@@ -1,5 +1,6 @@
 import { Directory, File, Paths } from 'expo-file-system';
 
+import { departmentForCategory } from '@/lib/categories';
 import type { Product } from '@/lib/types';
 
 function photoDirectory(): Directory {
@@ -45,6 +46,11 @@ function normalizeProduct(value: unknown): Product | null {
     upc: typeof item.upc === 'string' && item.upc.length > 0 ? item.upc : null,
     imageName: item.imageName,
     category: typeof item.category === 'string' ? item.category : '',
+    department:
+      typeof item.department === 'string' && item.department
+        ? item.department
+        : departmentForCategory(typeof item.category === 'string' ? item.category : ''),
+    audience: typeof item.audience === 'string' ? item.audience : '',
     sport: typeof item.sport === 'string' ? item.sport : '',
     size: typeof item.size === 'string' ? item.size : '',
     color: typeof item.color === 'string' ? item.color : '',
