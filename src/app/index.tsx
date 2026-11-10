@@ -32,7 +32,7 @@ export default function HomeScreen() {
   const [busyLabel, setBusyLabel] = useState<string | null>(null);
 
   const categories = useMemo(() => {
-    const names = new Set(products.map((product) => product.category).filter(Boolean));
+    const names = new Set(products.map((product) => product.department || product.category).filter(Boolean));
     return ['All', ...Array.from(names).sort((a, b) => a.localeCompare(b))];
   }, [products]);
 
@@ -41,12 +41,14 @@ export default function HomeScreen() {
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return products.filter((product) => {
-      if (activeCategory !== 'All' && product.category !== activeCategory) return false;
+      if (activeCategory !== 'All' && (product.department || product.category) !== activeCategory) return false;
       if (!needle) return true;
       const haystack = [
         productName(product),
         product.upc,
         product.category,
+        product.department,
+        product.audience,
         product.sport,
         product.size,
         product.color,
@@ -212,6 +214,7 @@ function ProductRow({ product }: { product: Product }) {
       <Image source={{ uri: photoUri(product.imageName) }} style={styles.thumb} />
       <View style={styles.rowBody}>
         <Text style={styles.category}>{productName(product) || 'Unnamed'}</Text>
+        <Text style={styles.meta}>{[product.department, product.audience, product.sport].filter(Boolean).join(' · ')}</Text>
         <Text style={styles.meta}>{product.upc ?? 'No barcode'}</Text>
         {detail ? <Text style={styles.meta}>{detail}</Text> : null}
         <Text style={styles.meta}>
