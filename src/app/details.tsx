@@ -41,6 +41,8 @@ export default function DetailsScreen() {
           upc: draft.upc,
           imageName,
           category: details.category,
+          department: details.department,
+          audience: details.audience,
           sport: details.sport,
           size: details.size,
           color: details.color,
@@ -77,6 +79,8 @@ export default function DetailsScreen() {
         initial={{
           upc: draft.upc,
           category: '',
+          department: '',
+          audience: '',
           sport: '',
           size: '',
           color: '',
