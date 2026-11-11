@@ -26,7 +26,7 @@ import { colors } from '@/theme';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { ready, loadError, products } = useInventory();
+  const { ready, loadError, products, clearLocalData } = useInventory();
   const unitCount = useMemo(() => products.reduce((total, item) => total + item.quantity, 0), [products]);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
@@ -95,6 +95,37 @@ export default function HomeScreen() {
     }
   }
 
+  function askClearLocalData() {
+    if (busyLabel) return;
+    Alert.alert(
+      'Clear all local inventory?',
+      `This permanently removes ${products.length} product entries, saved photos, and cached exports from this phone's inventory app. It cannot be undone. Copies already saved to your computer or another app are not affected.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear local data',
+          style: 'destructive',
+          onPress: () => {
+            setBusyLabel('Clearing local inventory...');
+            try {
+              clearLocalData();
+              setQuery('');
+              setCategory('All');
+              Alert.alert('Local data cleared', 'This phone now has an empty inventory.');
+            } catch (error) {
+              Alert.alert(
+                'Reset incomplete',
+                `${errorMessage(error)} Some local files may still remain. You can retry Clear local data.`,
+              );
+            } finally {
+              setBusyLabel(null);
+            }
+          },
+        },
+      ],
+    );
+  }
+
   function askExport() {
     if (products.length === 0) {
       Alert.alert('Nothing to export', 'Scan a product before creating a spreadsheet.');
@@ -128,6 +159,7 @@ export default function HomeScreen() {
         <Text style={styles.emptyBody}>
           Existing inventory was not changed. Restore a known-good backup before recording more products.
         </Text>
+        <ClearLocalDataButton onPress={askClearLocalData} />
       </View>
     );
   }
@@ -184,6 +216,7 @@ export default function HomeScreen() {
                 );
               })}
             </ScrollView>
+            <ClearLocalDataButton onPress={askClearLocalData} />
           </View>
         }
         renderItem={({ item }) => <ProductRow product={item} />}
@@ -201,6 +234,19 @@ export default function HomeScreen() {
         </View>
       ) : null}
     </View>
+  );
+}
+
+function ClearLocalDataButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityHint="Permanently removes this phone's saved inventory and photos after confirmation"
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.clearLocalButton}
+    >
+      <Text style={styles.clearLocalText}>Clear local data (this phone)</Text>
+    </Pressable>
   );
 }
 
@@ -269,6 +315,17 @@ const styles = StyleSheet.create({
   },
   filters: {
     gap: 8,
+  },
+  clearLocalButton: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  clearLocalText: {
+    color: colors.danger,
+    fontSize: 14,
+    fontWeight: '700',
   },
   filter: {
     backgroundColor: colors.chip,
