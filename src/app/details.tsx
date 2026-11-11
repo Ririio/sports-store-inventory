@@ -48,6 +48,7 @@ export default function DetailsScreen() {
           color: details.color,
           brand: details.brand,
           quantity: details.quantity,
+          price: details.price,
           notes: details.notes,
           createdAt: now,
           updatedAt: now,
@@ -86,6 +87,7 @@ export default function DetailsScreen() {
           color: '',
           brand: '',
           quantity: 1,
+          price: null,
           notes: '',
         }}
         onReplacePhoto={() => router.back()}

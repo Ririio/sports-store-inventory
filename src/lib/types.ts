@@ -10,6 +10,7 @@ export type Product = {
   color: string;
   brand: string;
   quantity: number;
+  price: number | null;
   notes: string;
   createdAt: string;
   updatedAt: string;
@@ -25,5 +26,6 @@ export type ItemDetails = {
   color: string;
   brand: string;
   quantity: number;
+  price: number | null;
   notes: string;
 };

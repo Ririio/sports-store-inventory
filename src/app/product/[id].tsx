@@ -50,6 +50,7 @@ export default function ProductScreen() {
           color: details.color,
           brand: details.brand,
           quantity: details.quantity,
+          price: details.price,
           notes: details.notes,
           updatedAt: new Date().toISOString(),
         });

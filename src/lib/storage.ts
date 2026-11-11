@@ -56,6 +56,7 @@ function normalizeProduct(value: unknown): Product | null {
     color: typeof item.color === 'string' ? item.color : '',
     brand: typeof item.brand === 'string' ? item.brand : '',
     quantity: typeof item.quantity === 'number' && item.quantity > 0 ? Math.round(item.quantity) : 1,
+    price: typeof item.price === 'number' && Number.isFinite(item.price) && item.price >= 0 && item.price <= 999999999.99 ? Math.round(item.price * 100) / 100 : null,
     notes: typeof item.notes === 'string' ? item.notes : '',
     createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
     updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : new Date().toISOString(),

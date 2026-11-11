@@ -18,6 +18,7 @@ import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { copyToComputer } from '@/lib/computer-sync';
 import { exportInventory, type ExportKind } from '@/lib/exportInventory';
 import { errorMessage, formatWhen, productName } from '@/lib/format';
+import { formatUnitPrice } from '@/lib/price';
 import { useInventory } from '@/lib/inventory-context';
 import { photoUri } from '@/lib/storage';
 import type { Product } from '@/lib/types';
@@ -217,6 +218,9 @@ function ProductRow({ product }: { product: Product }) {
         <Text style={styles.meta}>{[product.department, product.audience, product.sport].filter(Boolean).join(' · ')}</Text>
         <Text style={styles.meta}>{product.upc ?? 'No barcode'}</Text>
         {detail ? <Text style={styles.meta}>{detail}</Text> : null}
+        {product.price !== null ? (
+          <Text style={styles.meta}>{formatUnitPrice(product.price)} per item</Text>
+        ) : null}
         <Text style={styles.meta}>
           {product.quantity > 1 ? `Qty ${product.quantity} · ` : ''}
           {formatWhen(product.createdAt)}
