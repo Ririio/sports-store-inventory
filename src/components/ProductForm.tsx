@@ -23,6 +23,7 @@ import {
   sizeOptionsFor,
 } from '@/lib/categories';
 import { productName } from '@/lib/format';
+import { parseUnitPrice } from '@/lib/price';
 import type { ItemDetails } from '@/lib/types';
 import { normalizeUpc } from '@/lib/upc';
 import { colors } from '@/theme';
@@ -71,12 +72,18 @@ export function ProductForm({
   const [color, setColor] = useState(initial.color);
   const [brand, setBrand] = useState(initial.brand);
   const [quantity, setQuantity] = useState(initial.quantity > 0 ? initial.quantity : 1);
+  const [priceText, setPriceText] = useState(initial.price === null ? '' : initial.price.toFixed(2));
   const [notes, setNotes] = useState(initial.notes);
   const [upcText, setUpcText] = useState(initial.upc ?? '');
 
   function submit() {
     if (!department) {
       Alert.alert('Choose a department', 'Pick a broad category such as headwear, tops, or accessories.');
+      return;
+    }
+    const price = parseUnitPrice(priceText);
+    if (price === undefined) {
+      Alert.alert('Invalid price', 'Enter a non-negative CAD amount with up to two decimal places, or leave it blank.');
       return;
     }
     const chosenCategory = (customCategory.trim() || category || department).trim();
@@ -91,6 +98,7 @@ export function ProductForm({
       color: color.trim(),
       brand: brand.trim(),
       quantity,
+      price,
       notes: notes.trim(),
     });
   }
@@ -246,6 +254,21 @@ export function ProductForm({
             +
           </Text>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Unit price (CAD, optional)</Text>
+        <Text style={styles.hint}>Price for one item. Leave blank if unknown.</Text>
+        <TextInput
+          autoCorrect={false}
+          keyboardType="decimal-pad"
+          maxLength={16}
+          onChangeText={setPriceText}
+          placeholder="e.g. 29.99"
+          placeholderTextColor={colors.muted}
+          style={styles.input}
+          value={priceText}
+        />
       </View>
 
       <View style={styles.section}>
