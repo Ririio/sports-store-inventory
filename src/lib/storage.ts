@@ -88,6 +88,23 @@ export function saveProducts(products: Product[]): void {
   file.writeSync(JSON.stringify(products, null, 2));
 }
 
+// Delete the app's saved inventory first, so it cannot reference photos
+// after a reset. This works even when the existing JSON file is unreadable.
+export function deleteLocalInventoryFile(): void {
+  const file = inventoryFile();
+  if (file.exists) file.delete();
+}
+
+// Limit the cleanup to directories owned by this inventory app. Do not
+// delete the whole Expo cache or files already shared to another app/PC.
+export function deleteLocalPhotoAndExportFiles(): void {
+  const photos = new Directory(Paths.document, 'photos');
+  if (photos.exists) photos.delete();
+
+  const exports = new Directory(Paths.cache, 'exports');
+  if (exports.exists) exports.delete();
+}
+
 export async function readPhotoBase64(imageName: string): Promise<string | null> {
   const file = new File(photoDirectory(), imageName);
   if (!file.exists) return null;
