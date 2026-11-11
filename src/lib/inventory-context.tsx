@@ -9,7 +9,13 @@ import {
   type ReactNode,
 } from 'react';
 
-import { loadProducts, saveProducts } from '@/lib/storage';
+import { clearDraft } from '@/lib/draft';
+import {
+  deleteLocalInventoryFile,
+  deleteLocalPhotoAndExportFiles,
+  loadProducts,
+  saveProducts,
+} from '@/lib/storage';
 import type { Product } from '@/lib/types';
 import { upcsMatch } from '@/lib/upc';
 
@@ -22,6 +28,7 @@ type InventoryValue = {
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   incrementQuantity: (id: string) => void;
+  clearLocalData: () => void;
 };
 
 const InventoryContext = createContext<InventoryValue | null>(null);
@@ -98,6 +105,18 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     [commit],
   );
 
+  // Reset the saved inventory before deleting the photos. If media cleanup
+  // fails, the inventory remains empty and the user can retry the reset.
+  const clearLocalData = useCallback(() => {
+    deleteLocalInventoryFile();
+    productsRef.current = [];
+    setProducts([]);
+    loadErrorRef.current = null;
+    setLoadError(null);
+    clearDraft();
+    deleteLocalPhotoAndExportFiles();
+  }, []);
+
   const value = useMemo(
     () => ({
       ready,
@@ -108,8 +127,9 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       updateProduct,
       deleteProduct,
       incrementQuantity,
+      clearLocalData,
     }),
-    [ready, loadError, ordered, findByUpc, addProduct, updateProduct, deleteProduct, incrementQuantity],
+    [ready, loadError, ordered, findByUpc, addProduct, updateProduct, deleteProduct, incrementQuantity, clearLocalData],
   );
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>;
