@@ -19,6 +19,7 @@ const COLUMNS: { header: string; width: number; value: (product: Product) => Cel
   { header: 'Color', width: 14, value: (product) => product.color },
   { header: 'Brand', width: 18, value: (product) => product.brand },
   { header: 'Quantity', width: 10, value: (product) => product.quantity },
+  { header: 'Unit Price (CAD)', width: 18, value: (product) => product.price ?? '' },
   { header: 'Notes', width: 32, value: (product) => product.notes },
   { header: 'Date Added', width: 20, value: (product) => formatStamp(product.createdAt) },
   { header: 'Last Updated', width: 20, value: (product) => formatStamp(product.updatedAt) },
